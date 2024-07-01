@@ -1,0 +1,47 @@
+### 회원가입
+POST localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "email": "helloworld@gmail.com",
+  "password": "qwer1234!",
+  "intro": "hello",
+  "nickname": "world"
+}
+
+### 로그인
+POST localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "helloworld@gmail.com",
+  "password": "qwer1234!"
+}
+
+> {%
+    client.global.set("access_token", response.body.data.accessToken)
+    client.global.set("refresh_token", response.body.data.refreshToken)
+%}
+
+### 유저 하나 더 생성
+POST localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "email": "foobar@gmail.com",
+  "password": "qwer1234!",
+  "intro": "foo",
+  "nickname": "bar"
+}
+
+> {%
+client.global.set("foobar_id", response.body.data.id)
+ %}
+
+### 팔로우
+POST localhost:8080/api/users/{{foobar_id}}/follow
+Authorization: Bearer {{access_token}}
+
+### 언팔
+DELETE localhost:8080/api/users/{{foobar_id}}/follow
+Authorization: Bearer {{access_token}}

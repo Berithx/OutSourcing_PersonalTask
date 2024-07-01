@@ -5,6 +5,8 @@ import com.sparta.spartime.dto.response.PostResponseDto;
 import com.sparta.spartime.entity.Like;
 import com.sparta.spartime.entity.Post;
 import com.sparta.spartime.entity.User;
+import com.sparta.spartime.exception.BusinessException;
+import com.sparta.spartime.exception.ErrorCode;
 import com.sparta.spartime.repository.LikeRepository;
 import com.sparta.spartime.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +37,7 @@ public class PostService {
 
     public Page<PostResponseDto> getPage(int page, int size, String type) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        if (!type.isEmpty()) {
+        if (type.equals("ANONYMOUS")) {
             Post.Type postType = Post.Type.valueOf(type.toUpperCase());
             return postrepository.findByType(postType, pageRequest).map(post -> new PostResponseDto(post, postType));
         } else {
@@ -75,7 +77,7 @@ public class PostService {
 
         // 좋아요
         if(likeRepository.existsByUser_IdAndReferenceTypeAndRefId(user.getId(), Like.ReferenceType.POST, postId)){
-            throw new IllegalArgumentException("이미 좋아요를 눌렀습니다");
+            throw new BusinessException(ErrorCode.LIKE_ALREADY_EXISTS);
         }
         Like like = new Like(user,post);
         post.Likes(post.getLikes()+1);
@@ -88,7 +90,7 @@ public class PostService {
 
         // 좋아요
         Like like = likeRepository.findByUserIdAndReferenceTypeAndRefId(user.getId(), Like.ReferenceType.POST, postId).orElseThrow(
-                () -> new IllegalArgumentException("좋아요를 누르지 않았습니다.")
+                () -> new BusinessException(ErrorCode.LIKE_NOT_FOUND)
         );
         post.Likes(post.getLikes()-1);
         likeRepository.delete(like);
