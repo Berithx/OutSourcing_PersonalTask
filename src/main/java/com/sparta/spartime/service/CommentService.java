@@ -30,6 +30,7 @@ public class CommentService {
                 .user(user)
                 .post(post)
                 .contents(requestDto.getContents())
+                .likes(0L)
                 .build();
 
         return new CommentResponseDto(commentRepository.save(comment));
@@ -58,6 +59,26 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    @Transactional
+    public void likeComment(User user, Long postId, Long commentId) {
+        Comment comment = findComment(postId, commentId);
+
+        if (user.getId().equals(comment.getUser().getId())) {
+            throw new BusinessException(ErrorCode.NO_SELF_LIKE);
+        }
+
+        likeService.like(user, Like.ReferenceType.COMMENT, commentId);
+        comment.updateLikes(comment.getLikes()+1);
+    }
+
+    @Transactional
+    public void unlikeComment(User user, Long postId, Long commentId) {
+        Comment comment = findComment(postId, commentId);
+
+        likeService.unlike(user, Like.ReferenceType.COMMENT, commentId);
+        comment.updateLikes(comment.getLikes()-1);
+    }
+
     public Comment findComment(Long postId, Long commentId) {
         return commentRepository.findByIdAndPostId(commentId, postId).orElseThrow(
                 () -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND)
@@ -68,19 +89,5 @@ public class CommentService {
         if (!Objects.equals(inputUserId, userId)) {
             throw new BusinessException(ErrorCode.COMMENT_NOT_USER);
         }
-    }
-
-    public void likeComment(User user, Long postId, Long commentId) {
-        Comment comment = findComment(postId, commentId);
-
-        if (user.getId().equals(comment.getUser().getId())) {
-            throw new BusinessException(ErrorCode.NO_SELF_LIKE);
-        }
-
-        likeService.like(user, Like.ReferenceType.COMMENT, commentId);
-    }
-
-    public void unlikeComment(User user, Long commentId) {
-        likeService.unlike(user, Like.ReferenceType.COMMENT, commentId);
     }
 }

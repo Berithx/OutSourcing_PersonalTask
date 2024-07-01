@@ -12,6 +12,7 @@ public class CommentResponseDto {
     private Long id;
     private String email;
     private String contents;
+    private Long likes;
     private LocalDateTime createAt;
     private LocalDateTime updatedAt;
 
@@ -19,6 +20,7 @@ public class CommentResponseDto {
         this.id = comment.getId();
         this.email = comment.getUser().getEmail();
         this.contents = comment.getContents();
+        this.likes = comment.getLikes();
         this.createAt = comment.getCreatedAt();
         this.updatedAt = comment.getUpdatedAt();
     }

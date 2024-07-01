@@ -51,7 +51,7 @@ public class Post extends TimeStamp {
         this.contents = requestDto.getContent();
     }
 
-    public void Likes(Long likes) {
+    public void updateLike(Long likes) {
         this.likes = likes;
     }
 }
