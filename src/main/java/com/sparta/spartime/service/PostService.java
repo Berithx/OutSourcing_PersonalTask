@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
     
     private final PostRepository postrepository;
-    private final LikeRepository likeRepository;
+    private final LikeService likeService;
 
 
     public PostResponseDto create(PostRequestDto requestDto, User user ) {
@@ -72,28 +72,25 @@ public class PostService {
     }
 
     @Transactional
-    public void like(Long postId,User user) {
+    public void likePost(Long postId,User user) {
         Post post = getPost(postId);
 
         // 좋아요
-        if(likeRepository.existsByUser_IdAndReferenceTypeAndRefId(user.getId(), Like.ReferenceType.POST, postId)){
-            throw new BusinessException(ErrorCode.LIKE_ALREADY_EXISTS);
+        if (user.getId().equals(post.getUser().getId())) {
+            throw new BusinessException(ErrorCode.NO_SELF_LIKE);
         }
-        Like like = new Like(user,post);
+
+        likeService.like(user, Like.ReferenceType.POST, postId);
         post.Likes(post.getLikes()+1);
-        likeRepository.save(like);
     }
 
     @Transactional
-    public void unlike(Long postId,User user) {
+    public void unlikePost(Long postId,User user) {
         Post post = getPost(postId);
 
         // 좋아요
-        Like like = likeRepository.findByUserIdAndReferenceTypeAndRefId(user.getId(), Like.ReferenceType.POST, postId).orElseThrow(
-                () -> new BusinessException(ErrorCode.LIKE_NOT_FOUND)
-        );
+        likeService.unlike(user, Like.ReferenceType.POST, postId);
         post.Likes(post.getLikes()-1);
-        likeRepository.delete(like);
     }
 
 
@@ -109,7 +106,7 @@ public class PostService {
 
     private void userCheck(User user, Post post) {
         if(!post.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("게시판 주인이 아닙니다.");
+            throw new IllegalArgumentException("게시글 주인이 아닙니다.");
         }
     }
 }

@@ -70,7 +70,13 @@ public class CommentService {
         }
     }
 
-    public void likeComment(User user, Long commentId) {
+    public void likeComment(User user, Long postId, Long commentId) {
+        Comment comment = findComment(postId, commentId);
+
+        if (user.getId().equals(comment.getUser().getId())) {
+            throw new BusinessException(ErrorCode.NO_SELF_LIKE);
+        }
+
         likeService.like(user, Like.ReferenceType.COMMENT, commentId);
     }
 

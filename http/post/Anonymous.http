@@ -2,7 +2,7 @@
 ### post createAnonymous
 POST localhost:8080/api/posts/anonymous
 Content-Type: application/json
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "title": "제목",
@@ -15,14 +15,14 @@ Authorization: Bearer {{access_token}}
 %}
 
 ### post get
-GET localhost:8080/api/posts/{{post_id}}
+GET localhost:8080/api/posts/{{postId}}
 Content-Type: application/json
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 ### post update
-PATCH localhost:8080/api/posts/{{post_id}}
+PATCH localhost:8080/api/posts/{{postId}}
 Content-Type: application/json
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "title": "제목",
@@ -30,20 +30,20 @@ Authorization: Bearer {{access_token}}
 }
 
 ### post like
-POST localhost:8080/api/posts/{{post_id}}/like
-Authorization: Bearer {{access_token}}
+POST localhost:8080/api/posts/{{postId}}/like
+Authorization: Bearer {{accessToken}}
 
 ### post unlike
-DELETE localhost:8080/api/posts/{{post_id}}/like
-Authorization: Bearer {{access_token}}
+DELETE localhost:8080/api/posts/{{postId}}/like
+Authorization: Bearer {{accessToken}}
 
 ### post getPage
 GET http://localhost:8080/api/posts?page=1&size=10&type=anonymous
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 ### post delete
-DELETE localhost:8080/api/posts/{{post_id}}
-Authorization: Bearer {{access_token}}
+DELETE localhost:8080/api/posts/{{postId}}
+Authorization: Bearer {{accessToken}}
 
 
 

@@ -14,11 +14,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
 
     public void like(User user, Like.ReferenceType refType, Long refId) {
-        Like like = findLikeBy(user.getId(), refType, refId);
-        if (like != null) {
-            throw new BusinessException(ErrorCode.LIKE_ALREADY_EXISTS);
-        }
-
+        existLike(user.getId(), refType, refId);
         likeRepository.save(
                 Like.builder()
                         .refId(refId)
@@ -30,13 +26,18 @@ public class LikeService {
 
     public void unlike(User user, Like.ReferenceType refType, Long refId) {
         Like like = findLikeBy(user.getId(), refType, refId);
-        if (like == null) {
-            throw new BusinessException(ErrorCode.LIKE_NOT_FOUND);
-        }
         likeRepository.delete(like);
     }
 
-    private Like findLikeBy(Long userId, Like.ReferenceType refType, Long refId) {
-        return likeRepository.findByUserIdAndReferenceTypeAndRefId(userId, refType, refId).orElse(null);
+    protected Like findLikeBy(Long userId, Like.ReferenceType refType, Long refId) {
+        return likeRepository.findByUserIdAndReferenceTypeAndRefId(userId, refType, refId).orElseThrow(
+                () -> new BusinessException(ErrorCode.LIKE_NOT_FOUND)
+        );
     }
-}
+
+    protected void existLike(Long userId, Like.ReferenceType refType, Long refId) {
+        if (likeRepository.existsByUserIdAndReferenceTypeAndRefId(userId, refType, refId)) {
+            throw new BusinessException(ErrorCode.LIKE_ALREADY_EXISTS);
+        }
+    }
+ }
