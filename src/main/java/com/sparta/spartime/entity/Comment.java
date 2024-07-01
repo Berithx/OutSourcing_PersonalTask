@@ -27,7 +27,14 @@ public class Comment extends TimeStamp {
 
     private String contents;
 
+    @Column(name = "likes", columnDefinition = "bigint default 0")
+    private Long likes;
+
     public void updateComment(String contents) {
         this.contents = contents;
+    }
+
+    public void updateLikes(Long likes) {
+        this.likes = likes;
     }
 }

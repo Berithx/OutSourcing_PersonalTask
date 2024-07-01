@@ -60,7 +60,7 @@ public class CommentController {
     public ResponseEntity<?> unlikeComment(@LoginUser User user,
                                          @PathVariable("postId") Long postId,
                                          @PathVariable("commentId") Long commentId) {
-        commentService.unlikeComment(user, commentId);
+        commentService.unlikeComment(user, postId, commentId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -45,7 +45,6 @@ public class PostService {
         }
     }
 
-
     public PostResponseDto get(Long postId) {
         Post post = getPost(postId);
         if (post.getType() == Post.Type.ANONYMOUS) {
@@ -53,7 +52,6 @@ public class PostService {
         }
         return new PostResponseDto(post);
     }
-
 
     @Transactional
     public PostResponseDto update(PostRequestDto requestDto,Long postId,User user) {
@@ -81,7 +79,7 @@ public class PostService {
         }
 
         likeService.like(user, Like.ReferenceType.POST, postId);
-        post.Likes(post.getLikes()+1);
+        post.updateLike(post.getLikes()+1);
     }
 
     @Transactional
@@ -90,13 +88,8 @@ public class PostService {
 
         // 좋아요
         likeService.unlike(user, Like.ReferenceType.POST, postId);
-        post.Likes(post.getLikes()-1);
+        post.updateLike(post.getLikes()-1);
     }
-
-
-
-
-    //:::::::::::::::::::// 도구 //::::::::::::::::::://
 
     public Post getPost(Long postId) {
         return postrepository.findById(postId).orElseThrow(
