@@ -62,14 +62,14 @@ public class PostContrller {
     @PostMapping("/{postId}/like")
     public ResponseEntity<?> like(@PathVariable Long postId,
                                   @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        postService.like(postId,userPrincipal.getUser());
+        postService.likePost(postId,userPrincipal.getUser());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{postId}/like")
     public ResponseEntity<?> unlike(@PathVariable Long postId,
                                     @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        postService.unlike(postId,userPrincipal.getUser());
+        postService.unlikePost(postId,userPrincipal.getUser());
         return ResponseEntity.noContent().build();
     }
 }

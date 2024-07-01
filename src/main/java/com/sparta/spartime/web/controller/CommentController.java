@@ -52,7 +52,7 @@ public class CommentController {
     public ResponseEntity<?> likeComment(@LoginUser User user,
                                          @PathVariable("postId") Long postId,
                                          @PathVariable("commentId") Long commentId) {
-        commentService.likeComment(user, commentId);
+        commentService.likeComment(user, postId, commentId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

@@ -1,7 +1,7 @@
 ### 팔로우
 POST localhost:8080/api/users/2/follow
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 ### 언팔로우
 DELETE localhost:8080/api/users/2/follow
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}

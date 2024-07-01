@@ -1,0 +1,55 @@
+### 로그인
+POST localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "helloworld@gmail.com",
+  "password": "qwer1234!"
+}
+
+> {%
+    client.global.set("access_token", response.body.data.accessToken)
+    client.global.set("refresh_token", response.body.data.refreshToken)
+%}
+
+### 공지글 작성
+POST localhost:8080/api/admin/posts
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "title": "공지",
+  "contents": "안녕하세요"
+}
+
+### (foobar)유저 상태 변경
+PATCH localhost:8080/api/admin/users/{{foobar_id}}/status
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "status": "INACTIVITY"
+}
+
+### (foobar)상태 복구
+PATCH localhost:8080/api/admin/users/{{foobar_id}}/status
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "status": "ACTIVITY"
+}
+
+
+### (foobar)권한 변경
+PATCH localhost:8080/api/admin/users/{{foobar_id}}/role
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "role": "ADMIN"
+}
+
+### (foobar)조회
+GET localhost:8080/api/admin/users/{{foobar_id}}
+Authorization: Bearer {{access_token}}

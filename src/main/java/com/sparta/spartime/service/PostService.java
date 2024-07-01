@@ -5,6 +5,8 @@ import com.sparta.spartime.dto.response.PostResponseDto;
 import com.sparta.spartime.entity.Like;
 import com.sparta.spartime.entity.Post;
 import com.sparta.spartime.entity.User;
+import com.sparta.spartime.exception.BusinessException;
+import com.sparta.spartime.exception.ErrorCode;
 import com.sparta.spartime.repository.LikeRepository;
 import com.sparta.spartime.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
     
     private final PostRepository postrepository;
-    private final LikeRepository likeRepository;
+    private final LikeService likeService;
 
 
     public PostResponseDto create(PostRequestDto requestDto, User user ) {
@@ -35,7 +37,7 @@ public class PostService {
 
     public Page<PostResponseDto> getPage(int page, int size, String type) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        if (!type.isEmpty()) {
+        if (type.equals("ANONYMOUS")) {
             Post.Type postType = Post.Type.valueOf(type.toUpperCase());
             return postrepository.findByType(postType, pageRequest).map(post -> new PostResponseDto(post, postType));
         } else {
@@ -70,28 +72,25 @@ public class PostService {
     }
 
     @Transactional
-    public void like(Long postId,User user) {
+    public void likePost(Long postId,User user) {
         Post post = getPost(postId);
 
         // 좋아요
-        if(likeRepository.existsByUser_IdAndReferenceTypeAndRefId(user.getId(), Like.ReferenceType.POST, postId)){
-            throw new IllegalArgumentException("이미 좋아요를 눌렀습니다");
+        if (user.getId().equals(post.getUser().getId())) {
+            throw new BusinessException(ErrorCode.NO_SELF_LIKE);
         }
-        Like like = new Like(user,post);
+
+        likeService.like(user, Like.ReferenceType.POST, postId);
         post.Likes(post.getLikes()+1);
-        likeRepository.save(like);
     }
 
     @Transactional
-    public void unlike(Long postId,User user) {
+    public void unlikePost(Long postId,User user) {
         Post post = getPost(postId);
 
         // 좋아요
-        Like like = likeRepository.findByUserIdAndReferenceTypeAndRefId(user.getId(), Like.ReferenceType.POST, postId).orElseThrow(
-                () -> new IllegalArgumentException("좋아요를 누르지 않았습니다.")
-        );
+        likeService.unlike(user, Like.ReferenceType.POST, postId);
         post.Likes(post.getLikes()-1);
-        likeRepository.delete(like);
     }
 
 
@@ -107,7 +106,7 @@ public class PostService {
 
     private void userCheck(User user, Post post) {
         if(!post.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("게시판 주인이 아닙니다.");
+            throw new IllegalArgumentException("게시글 주인이 아닙니다.");
         }
     }
 }

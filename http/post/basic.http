@@ -2,7 +2,7 @@
 ### post create
 POST localhost:8080/api/posts
 Content-Type: application/json
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "title": "제목",
@@ -10,20 +10,20 @@ Authorization: Bearer {{access_token}}
 }
 
 > {%
-    client.global.set("post_id", response.body.data.id)
-    client.global.set("refresh_token", response.body.data.refreshToken)
+    client.global.set("postId", response.body.data.id)
+    client.global.set("refreshToken", response.body.data.refreshToken)
 %}
 
 ### post get
-GET localhost:8080/api/posts/{{post_id}}
+GET localhost:8080/api/posts/{{postId}}
 Content-Type: application/json
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 
 ### post update
-PATCH localhost:8080/api/posts/{{post_id}}
+PATCH localhost:8080/api/posts/{{postId}}
 Content-Type: application/json
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "title": "제목",
@@ -31,16 +31,16 @@ Authorization: Bearer {{access_token}}
 }
 
 ### post like
-POST localhost:8080/api/posts/{{post_id}}/like
-Authorization: Bearer {{access_token}}
+POST localhost:8080/api/posts/{{postId}}/like
+Authorization: Bearer {{accessToken}}
 
 ### post unlike
-DELETE localhost:8080/api/posts/{{post_id}}/like
-Authorization: Bearer {{access_token}}
+DELETE localhost:8080/api/posts/{{postId}}/like
+Authorization: Bearer {{accessToken}}
 
 ### post getPage
 GET http://localhost:8080/api/posts?page=1&size=10&type=NORMAL
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{accessToken}}
 
 
 ### post delete

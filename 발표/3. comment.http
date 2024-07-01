@@ -1,0 +1,73 @@
+### 로그인
+POST localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "helloworld@gmail.com",
+  "password": "qwer1234!"
+}
+
+> {%
+    client.global.set("access_token", response.body.data.accessToken)
+    client.global.set("refresh_token", response.body.data.refreshToken)
+%}
+
+### 게시글 작성
+POST localhost:8080/api/posts
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "title": "게시글",
+  "content": "작성"
+}
+
+> {%
+    client.global.set("post_id", response.body.data.id)
+%}
+
+### 댓글 작성
+POST localhost:8080/api/posts/{{post_id}}/comments
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "contents": "댓글 내용"
+}
+
+> {%
+    client.global.set("comment_id", response.body.data.id)
+%}
+
+### 게시글의 댓글 조회
+GET localhost:8080/api/posts/{{post_id}}/comments
+Content-Type: application/json
+
+### 수정
+PATCH localhost:8080/api/posts/{{post_id}}/comments/{{comment_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "contents": "수정된 댓글 내용"
+}
+
+### 게시글의 댓글 조회
+GET localhost:8080/api/posts/{{post_id}}/comments
+Content-Type: application/json
+
+### 댓글 좋아요
+POST localhost:8080/api/posts/{{post_id}}/comments/{{comment_id}}/like
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+### 댓글 좋아요 취소
+DELETE localhost:8080/api/posts/{{post_id}}/comments/{{comment_id}}/like
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+### 댓글 삭제
+DELETE localhost:8080/api/posts/{{post_id}}/comments/{{comment_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
