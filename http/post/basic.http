@@ -20,7 +20,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 ### post myLikePost
-GET localhost:8080/api/posts/mylikepost?page=1&size=5&type=POST
+GET localhost:8080/api/posts/liked?page=1&size=5
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
