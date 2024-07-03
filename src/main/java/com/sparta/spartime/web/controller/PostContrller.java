@@ -11,9 +11,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +43,7 @@ public class PostContrller {
         return ResponseEntity.ok(postService.getPage(page-1,size,type));
     }
 
-    @GetMapping("/mylikepost")
+    @GetMapping("/liked")
     public ResponseEntity<Page<PostResponseDto>> myLikePost(@RequestParam(defaultValue = "1") int page,
                                                                                @RequestParam(defaultValue = "5") int size,
                                                                                @LoginUser User user) {

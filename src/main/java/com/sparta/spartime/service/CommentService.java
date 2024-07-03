@@ -1,15 +1,21 @@
 package com.sparta.spartime.service;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.spartime.dto.request.CommentRequestDto;
 import com.sparta.spartime.dto.response.CommentResponseDto;
-import com.sparta.spartime.entity.Comment;
-import com.sparta.spartime.entity.Like;
-import com.sparta.spartime.entity.Post;
-import com.sparta.spartime.entity.User;
+import com.sparta.spartime.dto.response.PostResponseDto;
+import com.sparta.spartime.entity.*;
 import com.sparta.spartime.exception.BusinessException;
 import com.sparta.spartime.exception.ErrorCode;
 import com.sparta.spartime.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +28,7 @@ public class CommentService {
     private final PostService postService;
     private final LikeService likeService;
     private final CommentRepository commentRepository;
+    private final JPAQueryFactory jpaQueryFactory;
 
     public CommentResponseDto createComment(User user, Long postId, CommentRequestDto requestDto) {
         Post post = postService.getPost(postId);
@@ -43,6 +50,40 @@ public class CommentService {
         return comments.stream()
                 .map(CommentResponseDto::new)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CommentResponseDto> myLikedComment(int page, int size, User user) {
+        QLike like = QLike.like;
+        QComment comment = QComment.comment;
+        Pageable pageable = PageRequest.of(page, size);
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(like.referenceType.eq(Like.ReferenceType.COMMENT));
+        if (user != null) {
+            builder.and(like.user.eq(user));
+        } else {
+            builder.and(like.user.isNull());
+        }
+
+        JPAQuery<CommentResponseDto> query = jpaQueryFactory.select(
+                        Projections.constructor(CommentResponseDto.class,
+                                comment.id,
+                                comment.user.email,
+                                comment.contents,
+                                comment.likes,
+                                comment.createdAt,
+                                comment.updatedAt))
+                .from(comment)
+                .leftJoin(like).on(comment.id.eq(like.refId))
+                .where(builder)
+                .orderBy(comment.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        List<CommentResponseDto> response = query.fetch();
+
+        return new PageImpl<>(response, pageable, query.stream().count());
     }
 
     @Transactional
