@@ -1,26 +1,35 @@
 package com.sparta.spartime.service;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.spartime.dto.request.PostRequestDto;
 import com.sparta.spartime.dto.response.PostResponseDto;
-import com.sparta.spartime.entity.Like;
-import com.sparta.spartime.entity.Post;
-import com.sparta.spartime.entity.User;
+import com.sparta.spartime.entity.*;
 import com.sparta.spartime.exception.BusinessException;
 import com.sparta.spartime.exception.ErrorCode;
-import com.sparta.spartime.repository.LikeRepository;
 import com.sparta.spartime.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    
+
     private final PostRepository postrepository;
     private final LikeService likeService;
+    private final JPAQueryFactory jpaQueryFactory;
 
 
     public PostResponseDto create(PostRequestDto requestDto, User user ) {
@@ -43,6 +52,43 @@ public class PostService {
         } else {
             return postrepository.findAll(pageRequest).map(PostResponseDto::new);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> myLikedPost(int page, int size, User user) {
+        QPost post = QPost.post;
+        QLike like = QLike.like;
+        Pageable pageable = PageRequest.of(page, size);
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(like.referenceType.eq(Like.ReferenceType.POST));
+        if (user != null) {
+            builder.and(like.user.eq(user));
+        } else {
+            builder.and(like.user.isNull());
+        }
+
+        JPAQuery<PostResponseDto> query = jpaQueryFactory.select(
+                Projections.constructor(PostResponseDto.class,
+                        post.id,
+                        post.title,
+                        post.contents,
+                        post.user.id,
+                        post.likes,
+                        post.type,
+                        post.user.nickname,
+                        post.createdAt,
+                        post.updatedAt))
+                .from(post)
+                .leftJoin(like).on(post.id.eq(like.refId))
+                .where(builder)
+                .orderBy(post.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        List<PostResponseDto> response = query.fetch();
+
+        return new PageImpl<>(response, pageable, query.stream().count());
     }
 
     public PostResponseDto get(Long postId) {
