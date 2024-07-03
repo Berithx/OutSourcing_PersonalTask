@@ -1,17 +1,24 @@
 package com.sparta.spartime.service;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.spartime.entity.Like;
+import com.sparta.spartime.entity.QLike;
 import com.sparta.spartime.entity.User;
 import com.sparta.spartime.exception.BusinessException;
 import com.sparta.spartime.exception.ErrorCode;
 import com.sparta.spartime.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class LikeService {
     private final LikeRepository likeRepository;
+    private final JPAQueryFactory queryFactory;
 
     public void like(User user, Like.ReferenceType refType, Long refId) {
         existLike(user.getId(), refType, refId);
