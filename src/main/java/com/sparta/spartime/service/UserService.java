@@ -5,10 +5,7 @@ import com.sparta.spartime.dto.request.UserEditProfileRequestDto;
 import com.sparta.spartime.dto.request.UserSignupRequestDto;
 import com.sparta.spartime.dto.request.UserWithdrawRequestDto;
 import com.sparta.spartime.dto.response.UserResponseDto;
-import com.sparta.spartime.entity.Like;
-import com.sparta.spartime.entity.QLike;
-import com.sparta.spartime.entity.QPost;
-import com.sparta.spartime.entity.User;
+import com.sparta.spartime.entity.*;
 import com.sparta.spartime.exception.BusinessException;
 import com.sparta.spartime.exception.ErrorCode;
 import com.sparta.spartime.repository.UserRepository;
@@ -16,6 +13,7 @@ import com.sparta.spartime.security.principal.UserPrincipal;
 import com.sparta.spartime.web.argumentResolver.annotation.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,8 +121,12 @@ public class UserService {
         return new UserResponseDto(findById(id));
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDto getMyProfile(User user) {
-        User loginUser = findById(user.getId());
+        QUser qUser = QUser.user;
+        User loginUser = jpaQueryFactory.selectFrom(qUser)
+                .where(qUser.id.eq(user.getId()))
+                .fetchOne();
 
         QLike like = QLike.like;
 
