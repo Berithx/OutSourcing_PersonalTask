@@ -7,6 +7,7 @@ import com.sparta.spartime.dto.request.UserWithdrawRequestDto;
 import com.sparta.spartime.dto.response.UserResponseDto;
 import com.sparta.spartime.entity.User;
 import com.sparta.spartime.security.principal.UserPrincipal;
+import com.sparta.spartime.service.AuthService;
 import com.sparta.spartime.service.UserService;
 import com.sparta.spartime.web.argumentResolver.annotation.LoginUser;
 import jakarta.validation.Valid;
@@ -45,6 +46,11 @@ public class UserController {
     @Envelope("사용자 조회에 성공했습니다.")
     public ResponseEntity<UserResponseDto> getProfile(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.getProfile(id));
+    }
+
+    @GetMapping("/myprofile")
+    public ResponseEntity<UserResponseDto> getProfile(@LoginUser User user) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getMyProfile(user));
     }
 
     @DeleteMapping

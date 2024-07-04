@@ -1,9 +1,13 @@
 package com.sparta.spartime.service;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.spartime.dto.request.UserEditProfileRequestDto;
 import com.sparta.spartime.dto.request.UserSignupRequestDto;
 import com.sparta.spartime.dto.request.UserWithdrawRequestDto;
 import com.sparta.spartime.dto.response.UserResponseDto;
+import com.sparta.spartime.entity.Like;
+import com.sparta.spartime.entity.QLike;
+import com.sparta.spartime.entity.QPost;
 import com.sparta.spartime.entity.User;
 import com.sparta.spartime.exception.BusinessException;
 import com.sparta.spartime.exception.ErrorCode;
@@ -26,6 +30,7 @@ import java.util.Objects;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JPAQueryFactory jpaQueryFactory;
 
     public UserResponseDto signup(UserSignupRequestDto requestDto) {
         String email = requestDto.getEmail();
@@ -116,6 +121,24 @@ public class UserService {
 
     public UserResponseDto getProfile(Long id) {
         return new UserResponseDto(findById(id));
+    }
+
+    public UserResponseDto getMyProfile(User user) {
+        User loginUser = findById(user.getId());
+
+        QLike like = QLike.like;
+
+        List<Like> likedPostCount = jpaQueryFactory.selectFrom(like)
+                .where(like.user.id.eq(user.getId())
+                        .and(like.referenceType.eq(Like.ReferenceType.POST)))
+                .fetch();
+
+        List<Like> likedCommentCount = jpaQueryFactory.selectFrom(like)
+                .where(like.user.id.eq(user.getId())
+                        .and(like.referenceType.eq(Like.ReferenceType.COMMENT)))
+                .fetch();
+
+        return new UserResponseDto(loginUser, likedPostCount.size(), likedCommentCount.size());
     }
 
     @Transactional
