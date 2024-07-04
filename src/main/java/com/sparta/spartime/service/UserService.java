@@ -1,10 +1,11 @@
 package com.sparta.spartime.service;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.spartime.dto.request.UserEditProfileRequestDto;
 import com.sparta.spartime.dto.request.UserSignupRequestDto;
 import com.sparta.spartime.dto.request.UserWithdrawRequestDto;
 import com.sparta.spartime.dto.response.UserResponseDto;
-import com.sparta.spartime.entity.User;
+import com.sparta.spartime.entity.*;
 import com.sparta.spartime.exception.BusinessException;
 import com.sparta.spartime.exception.ErrorCode;
 import com.sparta.spartime.repository.UserRepository;
@@ -12,6 +13,7 @@ import com.sparta.spartime.security.principal.UserPrincipal;
 import com.sparta.spartime.web.argumentResolver.annotation.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ import java.util.Objects;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JPAQueryFactory jpaQueryFactory;
 
     public UserResponseDto signup(UserSignupRequestDto requestDto) {
         String email = requestDto.getEmail();
@@ -116,6 +119,28 @@ public class UserService {
 
     public UserResponseDto getProfile(Long id) {
         return new UserResponseDto(findById(id));
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDto getMyProfile(User user) {
+        QUser qUser = QUser.user;
+        User loginUser = jpaQueryFactory.selectFrom(qUser)
+                .where(qUser.id.eq(user.getId()))
+                .fetchOne();
+
+        QLike like = QLike.like;
+
+        List<Like> likedPostCount = jpaQueryFactory.selectFrom(like)
+                .where(like.user.id.eq(user.getId())
+                        .and(like.referenceType.eq(Like.ReferenceType.POST)))
+                .fetch();
+
+        List<Like> likedCommentCount = jpaQueryFactory.selectFrom(like)
+                .where(like.user.id.eq(user.getId())
+                        .and(like.referenceType.eq(Like.ReferenceType.COMMENT)))
+                .fetch();
+
+        return new UserResponseDto(loginUser, likedPostCount.size(), likedCommentCount.size());
     }
 
     @Transactional
